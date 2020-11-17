@@ -1,0 +1,80 @@
+library(gutenbergr)
+library(ggplot2)
+library(dplyr)
+library(tidytext)
+
+D.0 <- gutenberg_download(55752)
+head(D.0)
+
+D.1 <- D.0 %>% 
+  mutate(text=iconv(text, from = "latin1", to = "UTF-8"))
+
+head(D.1)
+
+D.1 <- D.1$text
+
+which(D.1 == 'I')
+which(D.1 == "FIM")
+
+inicio <- which(D.1== "I") 
+fim <- which(D.1 == "FIM")
+
+D.1.linhas <- D.1[inicio:fim]
+
+D1.C <- paste(D.1.linhas, collapse=" ")
+length(D1.C)
+
+D1.CB <- tolower(D1.C)
+
+D1.l <- strsplit(D1.CB, "\\W")
+
+D1.l.v <- unlist(D1.l)
+View(D1.l.v)
+typeof(D1.l.v)
+
+not.blanks <- which(D1.l.v!="")
+
+D1.l.v <- D1.l.v[not.blanks] 
+
+mypositions.v <- c (100,125,40)
+D1.l.v[mypositions.v]
+D1.l.v[1:30]
+
+capitu.f <- which(D1.l.v=='capitú')
+length(capitu.f)
+
+capitu.f
+
+plot(capitu.f)
+
+m.freqs.t <- table(D1.l.v)
+View(m.freqs.t)
+
+sorted.m.freqs.t <- sort(m.freqs.t, decreasing = T)
+head(sorted.m.freqs.t, 10)
+
+  w.count.v <- rep(NA,length(D1.l.v))
+
+w.count.v[capitu.f] <- 1
+View(w.count.v)
+
+plot(w.count.v, main="Ocorrências de Capitu",
+     xlab="Novel Time", ylab="Capitu", type="h", ylim=c(0,1), yaxt='n')
+
+
+library(readr)
+stopwords <- read_csv("Área de Trabalho/Doutorado/Disciplina_Linguagem_Tecnologia_2/stopwords.csv", col_names = FALSE)
+View(stopwords)
+colnames(stopwords)<-"word"
+
+library(tidytext)
+library(tidyr)
+library(dplyr)
+geral.list.df <- data.frame(text = M1.CB, stringsAsFactors = F)
+geral.list <- geral.list.df %>%
+  unnest_tokens(word, text) %>%
+  count(word, sort = TRUE) %>%
+  anti_join(my.stopwords, by= "word")%>%
+  mutate((freq = n / sum(n))*100) %>% 
+  arrange(desc(n))
+colnames(geral.list)<-c('word','n','freq')
