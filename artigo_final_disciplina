@@ -1,0 +1,225 @@
+library(xml2)
+library(XML)
+library(tm)
+library(dplyr)
+library(tidytext)
+library(corpus)
+library(wordcloud2)
+library(wordcloud)
+library(ggplot2)
+library(quanteda)
+library(forcats)
+library(tidyverse)
+library(topicmodels)
+library(devtools)
+library(knitr)
+#Carregar legendas - separadas por número de episódio 
+
+veronica_01 <- read_xml("Área de Trabalho/Doutorado/Artigo_Disciplina_Tecnologia_R/veronica_ep_01")
+veronica_01_xml <- xmlParse(veronica_01)
+veronica_01_df <- xmlToDataFrame(veronica_01_xml, stringsAsFactors = FALSE,) %>% 
+  mutate_all(~type.convert(., as.is = T)) 
+
+veronica_02 <- read_xml("Área de Trabalho/Doutorado/Artigo_Disciplina_Tecnologia_R/veronica_ep_02")
+veronica_02_xml <- xmlParse(veronica_02)
+#transformadndo xml em df   
+veronica_02_df <- xmlToDataFrame(veronica_02_xml, stringsAsFactors = FALSE,) %>% 
+  mutate_all(~type.convert(., as.is = T)) 
+
+veronica_03 <- read_xml("Área de Trabalho/Doutorado/Artigo_Disciplina_Tecnologia_R/veronica_ep_03")
+veronica_03_xml <- xmlParse(veronica_03)
+#transformadndo xml em df   
+veronica_03_df <- xmlToDataFrame(veronica_03_xml, stringsAsFactors = FALSE,) %>% 
+  mutate_all(~type.convert(., as.is = T)) 
+
+veronica_04 <- read_xml("Área de Trabalho/Doutorado/Artigo_Disciplina_Tecnologia_R/veronica_ep_04")
+veronica_04_xml <- xmlParse(veronica_04)
+#transformadndo xml em df   
+veronica_04_df <- xmlToDataFrame(veronica_04_xml, stringsAsFactors = FALSE,) %>% 
+  mutate_all(~type.convert(., as.is = T)) 
+
+veronica_05 <- read_xml("Área de Trabalho/Doutorado/Artigo_Disciplina_Tecnologia_R/veronica_ep_05")
+veronica_05_xml <- xmlParse(veronica_05)
+#transformadndo xml em df   
+veronica_05_df <- xmlToDataFrame(veronica_05_xml, stringsAsFactors = FALSE,) %>% 
+  mutate_all(~type.convert(., as.is = T)) 
+
+veronica_06 <- read_xml("Área de Trabalho/Doutorado/Artigo_Disciplina_Tecnologia_R/veronica_ep_06")
+veronica_06_xml <- xmlParse(veronica_06)
+#transformadndo xml em df   
+veronica_06_df <- xmlToDataFrame(veronica_06_xml, stringsAsFactors = FALSE,) %>% 
+  mutate_all(~type.convert(., as.is = T)) 
+
+veronica_07 <- read_xml("Área de Trabalho/Doutorado/Artigo_Disciplina_Tecnologia_R/veronica_ep_07")
+veronica_07_xml <- xmlParse(veronica_07)
+#transformadndo xml em df   
+veronica_07_df <- xmlToDataFrame(veronica_07_xml, stringsAsFactors = FALSE,) %>% 
+  mutate_all(~type.convert(., as.is = T)) 
+veronica_07_df
+
+veronica_08 <- read_xml("Área de Trabalho/Doutorado/Artigo_Disciplina_Tecnologia_R/veronica_ep_08")
+veronica_08_xml <- xmlParse(veronica_08)
+#transformadndo xml em df   
+veronica_08_df <- xmlToDataFrame(veronica_08_xml, stringsAsFactors = FALSE,) %>% 
+  mutate_all(~type.convert(., as.is = T)) 
+
+#juntar todos os dfs
+veronica <- bind_rows(veronica_01_df, veronica_02_df, veronica_03_df, veronica_04_df, veronica_05_df, veronica_06_df, veronica_07_df, veronica_08_df)
+
+
+veronica <- sapply(veronica, function(x) { gsub("\\[[^][]*]", "", x) })
+
+veronica
+
+as.tibble(veronica)
+
+veronica_coisas <- gsub("[\r\n]", "", veronica) 
+
+
+veronica_coisas <- veronica_coisas[-15,]
+veronica_coisas <- veronica_coisas[-13,]
+veronica_coisas <- veronica_coisas[-11,]
+veronica_coisas <- veronica_coisas[-9,]
+veronica_coisas <- veronica_coisas[-7,]
+veronica_coisas <- veronica_coisas[-5,]
+veronica_coisas <- veronica_coisas[-3,]
+veronica_coisas <- veronica_coisas[-1,]
+
+as.tibble(veronica_coisas)
+
+veronica_coisas <- veronica_coisas[,-1]
+veronica_coisas <- veronica_coisas[,-2]
+
+as.tibble(veronica_coisas)
+
+colnames(veronica_coisas) [1] <- "episódio"
+colnames(veronica_coisas) [2] <- "texto"
+
+as.tibble(veronica_coisas)
+
+counter <- 01:08
+row.names(veronica_coisas) <- counter
+veronica_coisas
+
+veronica_coisas <- veronica_coisas[,-1]
+veronica_coisas
+
+#vamos transformar em corpos, e ver quantos tokens achamos por texto? 
+
+got.corpus <- corpus(veronica_coisas)
+metacorpus(got.corpus, "source") <- "No peaking!"
+summary(got.corpus, 10, showmeta = FALSE)
+
+#A função kwic será muito importante para o trabalho. Com ela, vamos localizar as situações em que aparecem palavras-chave importante para nosso trabalho: 
+
+#mulher
+mulher <- kwic(got.corpus, phrase("mulher"), window = 3)
+kable(head(kwic(got.corpus, pattern = "mulher", window = 3, valuetype = "glob")))
+
+#violência
+violência <- kwic(got.corpus, phrase("violência"), window = 3)
+kable(head(kwic(got.corpus, pattern = "violência", window = 3, valuetype = "glob")))
+
+#mulheres
+mulheres <- kwic(got.corpus, phrase("mulheres"), window = 3)
+kable(head(kwic(got.corpus, pattern = "mulheres", window = 3, valuetype = "glob")))
+
+#agressão
+agressão <- kwic(got.corpus, phrase("agressão"), window = 3)
+kable(head(kwic(got.corpus, pattern = "agressão", window = 3, valuetype = "glob")))
+
+#marido
+marido <- kwic(got.corpus, phrase("marido"), window = 3)
+kable(head(kwic(got.corpus, pattern = "marido", window = 3, valuetype = "glob")))
+
+#sozinha
+sozinha <- kwic(got.corpus, phrase =("sozinha"), window = 3)
+kable(head(kwic(got.corpus, pattern = "sozinha", window = 3, valuetype = "glob")))
+
+#denuncia
+denúncia <- kwic(got.corpus, phrase("denúncia"), window = 3)
+kable(head(kwic(got.corpus, pattern = "denúncia", window = 3, valuetype = "glob")))
+
+
+#fala
+fala <- kwic(got.corpus, phrase("fala"), window = 3)
+kable(head(kwic(got.corpus, pattern = "fala", window = 3, valuetype = "glob")))
+
+
+#confia
+confia <- kwic(got.corpus, phrase("confia"), window = 3)
+kable(head(kwic(got.corpus, pattern = "confia", window = 3, valuetype = "glob")))
+
+#ajuda
+ajuda <- kwic(got.corpus, phrase("ajuda"), window = 3)
+kable(head(kwic(got.corpus, pattern = "ajuda", window = 3, valuetype = "glob")))
+
+#marido
+marido <- kwic(got.corpus, phrase("marido"), window = 3)
+kable(head(kwic(got.corpus, pattern = "marido", window = 3, valuetype = "glob")))
+
+#Janete
+Janete <- kwic(got.corpus, phrase("Janete"), window = 3)
+kable(head(kwic(got.corpus, pattern = "Janete", window = 3, valuetype = "glob")))
+
+#pensando
+pensando <- kwic(got.corpus, phrase ("pensando"), window = 3)
+kable(head(kwic(got.corpus, pattern = "pensando", window = 3, valuetype = "glob")))
+
+#amor 
+amor <- kwic(got.corpus, phrase("amor"), window = 3)
+kable(head(kwic(got.corpus, pattern = "amor", window = 3, valuetype = "glob")))
+
+#amo
+amo <- kwic(got.corpus, phrase("amo"), window = 3)
+kable(head(kwic(got.corpus, pattern = "amo", window = 3, valuetype = "glob")))
+
+#ameaçada 
+ameaçada <- kwic(got.corpus, phrase("ameaçada"), window = 3)
+kable(head(kwic(got.corpus, pattern = "ameaçada", window = 3, valuetype = "glob")))
+
+#ameaça
+ameaça <- kwic(got.corpus, phrase("ameaça"), window = 3)
+kable(head(kwic(got.corpus, pattern = "ameaça", window = 3, valuetype = "glob")))
+
+#Verônica
+ameaça <- kwic(got.corpus, phrase("Verônica"), window = 3)
+kable(head(kwic(got.corpus, pattern = "Verônica", window = 3, valuetype = "glob")))
+      
+#ameaça
+ameaça <- kwic(got.corpus, phrase("ameaça"), window = 3)
+kable(head(kwic(got.corpus, pattern = "ameaça", window = 3, valuetype = "glob")))
+
+#morte
+morte <- kwic(got.corpus, phrase("morte"), window = 3)
+kable(head(kwic(got.corpus, pattern = "morte", window = 3, valuetype = "glob")))
+
+#vítimas
+vítimas <- kwic(got.corpus, phrase("vítimas"), window = 3)
+kable(head(kwic(got.corpus, pattern = "vítimas", window = 3, valuetype = "glob")))
+
+#agressão
+agressão <- kwic(got.corpus, phrase("agressão"), window = 3)
+kable(head(kwic(got.corpus, pattern = "agressão", window = 3, valuetype = "glob")))
+
+#hora de tokenizar
+
+got.tokens <- tokens(got.corpus, what = "word", ngrams = 1:3, remove_punct = TRUE) 
+
+#exemplo: token do último episódio
+head(got.tokens[[8]], 60)
+
+#Transformar em matriz e, em seguida, criar uma nuvem de palavras.
+stopwords_pt <- readLines("stopwords.txt", encoding = "UTF-8")
+
+veronica.dfm <- dfm(got.corpus, remove = stopwords_pt, remove_punct = TRUE)
+
+top.words <- topfeatures(veronica.dfm, n = 8,  groups = docnames(veronica.dfm))
+#S06E05
+top.words[8]
+
+#wordcloud de todo o script
+set.seed(10)
+textplot_wordcloud(veronica.dfm, rotation = 0.03, 
+                   color = rev(RColorBrewer::brewer.pal(10, "RdBu")))
+
